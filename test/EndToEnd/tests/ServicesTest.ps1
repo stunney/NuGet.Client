@@ -1,4 +1,4 @@
-﻿function Test-PackageManagerServicesAreAvailableThroughMEF {
+function Test-PackageManagerServicesAreAvailableThroughMEF {
     # Arrange
     $cm = Get-VsComponentModel
 
@@ -696,6 +696,26 @@ function Test-RestorePackageAPINoPackage
 
     # Assert
     Assert-False (Join-Path (Get-ProjectDir $p) packages.config)
+}
+
+function Test-RestorePackageAPIPackageRefProject
+{
+    param($context)
+
+    # Arrange
+    $project = New-UwpPackageRefClassLibrary UwpLibrary1
+    Assert-NetCoreProjectCreation $project
+    Assert-ProjectCacheFileExists $project
+
+    Clean-Solution
+
+    Assert-ProjectCacheFileNotExists $project
+
+    # Act
+    [API.Test.InternalAPITestHook]::RestorePackageApi()
+
+    # Assert
+    Assert-ProjectCacheFileExists $project
 }
 
 function Test-InstallPackageAPIBindingRedirect

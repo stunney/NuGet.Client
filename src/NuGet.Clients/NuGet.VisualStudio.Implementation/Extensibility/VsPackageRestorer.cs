@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -17,13 +17,15 @@ namespace NuGet.VisualStudio
         private readonly Configuration.ISettings _settings;
         private readonly ISolutionManager _solutionManager;
         private readonly IPackageRestoreManager _restoreManager;
+        private readonly ISolutionRestoreWorker _solutionRestoreWorker;
 
         [ImportingConstructor]
-        public VsPackageRestorer(Configuration.ISettings settings, ISolutionManager solutionManager, IPackageRestoreManager restoreManager)
+        public VsPackageRestorer(Configuration.ISettings settings, ISolutionManager solutionManager, IPackageRestoreManager restoreManager, ISolutionRestoreWorker solutionRestoreWorker)
         {
             _settings = settings;
             _solutionManager = solutionManager;
             _restoreManager = restoreManager;
+            _solutionRestoreWorker = solutionRestoreWorker;
         }
 
         public bool IsUserConsentGranted()
@@ -45,9 +47,9 @@ namespace NuGet.VisualStudio
                 // pipeline execution thread and they might try to access DTE. Doing that under
                 // ThreadHelper.JoinableTaskFactory.Run will consistently result in a hang
                 NuGetUIThreadHelper.JoinableTaskFactory.Run(() =>
-                    _restoreManager.RestoreMissingPackagesInSolutionAsync(solutionDirectory,
-                    nuGetProjectContext,
-                    CancellationToken.None));
+                   _solutionRestoreWorker.ScheduleRestoreAsync(SolutionRestoreRequest.ByMenu(), CancellationToken.None));
+
+
             }
             catch (Exception ex)
             {
