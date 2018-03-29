@@ -714,6 +714,22 @@ function Test-RestorePackageAPIPackageRefProject
     Assert-ProjectCacheFileExists $project
 }
 
+function Test-RestorePackageAPIPackageNetCoreProject {
+
+    # Arrange & Act
+    $project = New-NetCoreConsoleApp ConsoleApp
+    Build-Solution
+    Assert-ProjectCacheFileExists $project
+    Clean-Solution
+    Assert-ProjectCacheFileNotExists $project
+
+    # Act
+    [API.Test.InternalAPITestHook]::RestorePackageApi()
+
+    # Assert
+    Assert-ProjectCacheFileExists $project
+}
+
 function Test-InstallPackageAPIBindingRedirect
 {
     param($context)
