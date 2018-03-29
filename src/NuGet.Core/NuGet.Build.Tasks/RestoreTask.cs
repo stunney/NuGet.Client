@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -70,6 +71,12 @@ namespace NuGet.Build.Tasks
 
         public override bool Execute()
         {
+            while (!Debugger.IsAttached)
+            {
+                System.Threading.Thread.Sleep(100);
+            }
+            Debugger.Break();
+
             var log = new MSBuildLogger(Log);
 
             // Log inputs
