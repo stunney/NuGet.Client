@@ -705,10 +705,6 @@ function Test-RestorePackageAPIPackageRefProject
     # Arrange
     $project = New-UwpPackageRefClassLibrary UwpLibrary1
     Assert-NetCoreProjectCreation $project
-    Assert-ProjectCacheFileExists $project
-
-    Clean-Solution
-
     Assert-ProjectCacheFileNotExists $project
 
     # Act
