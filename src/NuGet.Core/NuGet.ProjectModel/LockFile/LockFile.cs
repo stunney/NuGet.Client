@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -130,6 +130,21 @@ namespace NuGet.ProjectModel
                 && PackageFolders.SequenceEqual(other.PackageFolders)
                 && EqualityUtility.EqualsWithNullCheck(PackageSpec, other.PackageSpec)
                 && LogsEqual(other.LogMessages);
+        }
+
+        public LockFile Clone()
+        {
+            var lockFile = new LockFile();
+            lockFile.Version = Version;
+            lockFile.Path = Path;
+            lockFile.ProjectFileDependencyGroups = ProjectFileDependencyGroups?.Select(item => item.Clone()).ToList();
+            lockFile.Libraries = Libraries?.Select(item => item.Clone()).ToList();
+            lockFile.Targets = Targets?.Select(item => item.Clone()).ToList();
+            lockFile.PackageFolders = new List<LockFileItem>(PackageFolders);
+            lockFile.PackageSpec = PackageSpec.Clone();
+            lockFile.LogMessages = new List<IAssetsLogMessage>(LogMessages);
+
+            return lockFile;
         }
 
         private bool LogsEqual(IList<IAssetsLogMessage> otherLogMessages)

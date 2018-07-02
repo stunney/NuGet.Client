@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -43,6 +43,13 @@ namespace NuGet.ProjectModel
             }
 
             return false;
+        }
+
+        public ProjectFileDependencyGroup Clone()
+        {
+            var depGroup = new ProjectFileDependencyGroup(FrameworkName, Dependencies?.Select(item => item));
+
+            return depGroup;
         }
 
         public override bool Equals(object obj)
