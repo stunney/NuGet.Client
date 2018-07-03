@@ -682,6 +682,60 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Shows the available updates for the installed packages..
+        /// </summary>
+        internal static string Outdated_Description {
+            get {
+                return ResourceManager.GetString("Outdated_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ignores the given constraints by the user for given packages, and shows the latest version in the sources..
+        /// </summary>
+        internal static string OutdatedConstraints_Description {
+            get {
+                return ResourceManager.GetString("OutdatedConstraints_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shows the reason for deprecation. This option is not required to just show that a package is deprecated..
+        /// </summary>
+        internal static string OutdatedDeprecated_Description {
+            get {
+                return ResourceManager.GetString("OutdatedDeprecated_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shows the latest patch update available..
+        /// </summary>
+        internal static string OutdatedPatch_Description {
+            get {
+                return ResourceManager.GetString("OutdatedPatch_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Considers showing the latest prerelease package if the latest package is a prerelease version..
+        /// </summary>
+        internal static string OutdatedPrerelease_Description {
+            get {
+                return ResourceManager.GetString("OutdatedPrerelease_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shows the transitive packages that are out of date in addition to the top-level ones..
+        /// </summary>
+        internal static string OutdatedTransitive_Description {
+            get {
+                return ResourceManager.GetString("OutdatedTransitive_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Specifies the directory for the created NuGet package file. If not specified, uses the current directory.
         /// </summary>
         internal static string OutputDirectory_Description {

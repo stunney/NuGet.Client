@@ -6410,6 +6410,69 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Shows the reason for deprecation. This option is not required to just show that a package is deprecated..
+        /// </summary>
+        internal static string OutdatedCommandDeprecatedDescription {
+            get {
+                return ResourceManager.GetString("OutdatedCommandDeprecatedDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shows the available updates for the installed packages..
+        /// </summary>
+        internal static string OutdatedCommandDescription {
+            get {
+                return ResourceManager.GetString("OutdatedCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shows the latest patch update available..
+        /// </summary>
+        internal static string OutdatedCommandLatestPatchDescription {
+            get {
+                return ResourceManager.GetString("OutdatedCommandLatestPatchDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ignores the given constraints by the user for given packages, and shows the latest version in the sources..
+        /// </summary>
+        internal static string OutdatedCommandNoConstraintsDescription {
+            get {
+                return ResourceManager.GetString("OutdatedCommandNoConstraintsDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Considers showing the latest prerelease package if the latest package is a prerelease version..
+        /// </summary>
+        internal static string OutdatedCommandPrereleaseDescription {
+            get {
+                return ResourceManager.GetString("OutdatedCommandPrereleaseDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shows the transitive packages that are out of date in addition to the top-level ones..
+        /// </summary>
+        internal static string OutdatedCommandTransitiveDescription {
+            get {
+                return ResourceManager.GetString("OutdatedCommandTransitiveDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to nuget outdated.
+        /// </summary>
+        internal static string OutdatedCommandUsageExamples {
+            get {
+                return ResourceManager.GetString("OutdatedCommandUsageExamples", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The base path of the files defined in the nuspec file..
         /// </summary>
         internal static string PackageCommandBasePathDescription {
@@ -12483,6 +12546,15 @@ namespace NuGet.CommandLine {
         internal static string SourcesCommandStorePasswordInClearTextDescription_trk {
             get {
                 return ResourceManager.GetString("SourcesCommandStorePasswordInClearTextDescription_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Make a source a trusted repository for repository signature verification..
+        /// </summary>
+        internal static string SourcesCommandTrustDescription {
+            get {
+                return ResourceManager.GetString("SourcesCommandTrustDescription", resourceCulture);
             }
         }
         

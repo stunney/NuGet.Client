@@ -15,28 +15,44 @@ using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
+using NuGet.Commands;
 
 namespace NuGet.CommandLine
 {
-    [Command(typeof(NuGetCommand), "outdated", "UpdateCommandDescription", UsageSummary = "<packages.config|solution|project>",
-        UsageExampleResourceName = "UpdateCommandUsageExamples")]
+    [Command(typeof(NuGetCommand), "outdated", "OutdatedCommandDescription", UsageSummary = "<packages.config|solution|project>",
+        UsageExampleResourceName = "OutdatedCommandUsageExamples")]
     public class OutdatedCommand : Command
     {
-        [Option(typeof(NuGetCommand), "UpdateCommandSourceDescription")]
-        public ICollection<string> Source { get; } = new List<string>();
-
-        [Option(typeof(NuGetCommand), "UpdateCommandSelfDescription")]
-        public bool Self { get; set; }
-
-        [Option(typeof(NuGetCommand), "UpdateCommandVerboseDescription")]
-        public bool Verbose { get; set; }
-
-        [Option(typeof(NuGetCommand), "UpdateCommandPrerelease")]
+        [Option(typeof(NuGetCommand), "OutdatedCommandPrereleaseDescription", AltName = "include-prerelease")]
         public bool Prerelease { get; set; }
 
-        public override Task ExecuteCommandAsync()
+        [Option(typeof(NuGetCommand), "OutdatedCommandDeprecatedDescription", AltName = "show-deprecated")]
+        public bool Deprecated { get; set; }
+
+        [Option(typeof(NuGetCommand), "OutdatedCommandLatestPatchDescription", AltName = "show-latest-patch")]
+        public bool Patch { get; set; }
+
+        [Option(typeof(NuGetCommand), "OutdatedCommandTransitiveDescription", AltName = "include-transitive")]
+        public bool Transitive { get; set; }
+
+        [Option(typeof(NuGetCommand), "OutdatedCommandNoConstraintsDescription", AltName = "no-constraints")]
+        public bool NoConstraints { get; set; }
+
+        public override async Task ExecuteCommandAsync()
         {
-            return null;
+            var outdatedCommandRunner = new OutdatedCommandRunner();
+
+            var list = new OutdatedArgs(Arguments,
+                Settings,
+                Console,
+                Prerelease,
+                Deprecated,
+                Patch,
+                Transitive,
+                NoConstraints,
+                CancellationToken.None);
+
+            await outdatedCommandRunner.ExecuteCommand(list);
         }
     }
 }

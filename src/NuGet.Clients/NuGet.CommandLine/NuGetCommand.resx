@@ -5476,4 +5476,26 @@ This option should be used when specifying the certificate via -CertificateSubje
   <data name="CommandNoServiceEndpointDescription" xml:space="preserve">
     <value>Does not append "api/v2/packages" to the source URL.</value>
   </data>
+  <data name="OutdatedCommandDeprecatedDescription" xml:space="preserve">
+    <value>Shows the reason for deprecation. This option is not required to just show that a package is deprecated.</value>
+  </data>
+  <data name="OutdatedCommandDescription" xml:space="preserve">
+    <value>Shows the available updates for the installed packages.</value>
+  </data>
+  <data name="OutdatedCommandLatestPatchDescription" xml:space="preserve">
+    <value>Shows the latest patch update available.</value>
+  </data>
+  <data name="OutdatedCommandNoConstraintsDescription" xml:space="preserve">
+    <value>Ignores the given constraints by the user for given packages, and shows the latest version in the sources.</value>
+  </data>
+  <data name="OutdatedCommandPrereleaseDescription" xml:space="preserve">
+    <value>Considers showing the latest prerelease package if the latest package is a prerelease version.</value>
+  </data>
+  <data name="OutdatedCommandTransitiveDescription" xml:space="preserve">
+    <value>Shows the transitive packages that are out of date in addition to the top-level ones.</value>
+  </data>
+  <data name="OutdatedCommandUsageExamples" xml:space="preserve">
+    <value>nuget outdated</value>
+    <comment>Please don't localize this string</comment>
+  </data>
 </root>
