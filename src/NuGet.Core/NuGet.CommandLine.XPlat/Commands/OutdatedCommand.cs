@@ -55,11 +55,11 @@ namespace NuGet.CommandLine.XPlat
 
                 outdated.OnExecute(async () =>
                 {
-                    Debugger.Launch();
+
                     var logger = getLogger();
                     var settings = XPlatUtility.CreateDefaultSettings();
-                    IList<string> arguments = null;
-
+                    var arguments = new List<string>();
+                    
                     var outdatedCommandRunner = new OutdatedCommandRunner();
 
                     var list = new OutdatedArgs(arguments,
