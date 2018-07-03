@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -54,9 +55,10 @@ namespace NuGet.CommandLine.XPlat
 
                 outdated.OnExecute(async () =>
                 {
+                    Debugger.Launch();
                     var logger = getLogger();
                     var settings = XPlatUtility.CreateDefaultSettings();
-                    IList<string> arguments;
+                    IList<string> arguments = null;
 
                     var outdatedCommandRunner = new OutdatedCommandRunner();
 

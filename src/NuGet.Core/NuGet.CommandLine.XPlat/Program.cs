@@ -149,6 +149,7 @@ namespace NuGet.CommandLine.XPlat
                 DeleteCommand.Register(app, () => log);
                 PushCommand.Register(app, () => log);
                 LocalsCommand.Register(app, () => log);
+                OutdatedCommand.Register(app, () => log);
             }
         }
 
