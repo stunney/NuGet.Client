@@ -43,7 +43,7 @@ namespace NuGet.ProjectManagement
         /// <summary>
         /// Represents the full path to "packages.config"
         /// </summary>
-        private string PackagesConfigPath { get; }
+        public string PackagesConfigPath { get; }
 
         /// <summary>
         /// Represents the full path to "packages.'projectName'.config"

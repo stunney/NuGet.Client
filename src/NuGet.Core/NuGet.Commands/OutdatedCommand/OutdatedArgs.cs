@@ -19,6 +19,7 @@ namespace NuGet.Commands
 
         public ILogger Logger { get; }
 
+        public IPackageSourceProvider SourceProvider { get; set; }
         public bool Prerelease { get; }
 
         public bool Deprecated { get; }
@@ -27,13 +28,13 @@ namespace NuGet.Commands
 
         public bool Transitive { get; }
 
-        public bool NoConstraints{ get; }
+        public bool All{ get; }
 
         public CancellationToken CancellationToken { get; }
 
         public OutdatedArgs(IList<string> arguments, ISettings settings, ILogger logger,
-                            bool prerelease, bool deprecated, bool patch, bool transitive,
-                            bool noConstraints, CancellationToken token)
+                            IPackageSourceProvider sourceProvider, bool prerelease, bool deprecated,
+                            bool patch, bool transitive, bool all, CancellationToken token)
         {
             if (arguments == null)
             {
@@ -52,10 +53,11 @@ namespace NuGet.Commands
             Settings = settings;
             Prerelease = prerelease;
             Logger = logger;
+            SourceProvider = sourceProvider;
             Deprecated = deprecated;
             Patch = patch;
             Transitive = transitive;
-            NoConstraints = noConstraints;
+            All = all;
             CancellationToken = token;
         }
     }

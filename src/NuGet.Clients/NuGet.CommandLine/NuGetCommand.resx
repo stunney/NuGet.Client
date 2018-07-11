@@ -5485,8 +5485,8 @@ This option should be used when specifying the certificate via -CertificateSubje
   <data name="OutdatedCommandLatestPatchDescription" xml:space="preserve">
     <value>Shows the latest patch update available.</value>
   </data>
-  <data name="OutdatedCommandNoConstraintsDescription" xml:space="preserve">
-    <value>Ignores the given constraints by the user for given packages, and shows the latest version in the sources.</value>
+  <data name="OutdatedCommandAllDescription" xml:space="preserve">
+    <value>Shows all of the packages regardless of whether they have an update or not</value>
   </data>
   <data name="OutdatedCommandPrereleaseDescription" xml:space="preserve">
     <value>Considers showing the latest prerelease package if the latest package is a prerelease version.</value>

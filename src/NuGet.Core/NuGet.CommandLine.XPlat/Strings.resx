@@ -474,8 +474,8 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   <data name="AddPkg_InteractiveDescription" xml:space="preserve">
     <value>Allow the command to block and require manual action for operations like authentication.</value>
   </data>
-  <data name="OutdatedConstraints_Description" xml:space="preserve">
-    <value>Ignores the given constraints by the user for given packages, and shows the latest version in the sources.</value>
+  <data name="OutdatedAll_Description" xml:space="preserve">
+    <value>Shows all of the packages regardless of whether they have an update or not</value>
   </data>
   <data name="OutdatedDeprecated_Description" xml:space="preserve">
     <value>Shows the reason for deprecation. This option is not required to just show that a package is deprecated.</value>

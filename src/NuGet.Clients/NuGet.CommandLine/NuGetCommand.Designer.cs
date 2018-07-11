@@ -6410,6 +6410,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Shows all of the packages regardless of whether they have an update or not.
+        /// </summary>
+        internal static string OutdatedCommandAllDescription {
+            get {
+                return ResourceManager.GetString("OutdatedCommandAllDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Shows the reason for deprecation. This option is not required to just show that a package is deprecated..
         /// </summary>
         internal static string OutdatedCommandDeprecatedDescription {
@@ -6433,15 +6442,6 @@ namespace NuGet.CommandLine {
         internal static string OutdatedCommandLatestPatchDescription {
             get {
                 return ResourceManager.GetString("OutdatedCommandLatestPatchDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Ignores the given constraints by the user for given packages, and shows the latest version in the sources..
-        /// </summary>
-        internal static string OutdatedCommandNoConstraintsDescription {
-            get {
-                return ResourceManager.GetString("OutdatedCommandNoConstraintsDescription", resourceCulture);
             }
         }
         

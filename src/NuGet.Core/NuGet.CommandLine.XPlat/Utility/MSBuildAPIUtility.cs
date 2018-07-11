@@ -31,6 +31,7 @@ namespace NuGet.CommandLine.XPlat
         public MSBuildAPIUtility(ILogger logger)
         {
             Logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
         }
 
         /// <summary>
@@ -38,14 +39,21 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="projectCSProjPath">CSProj file which needs to be evaluated</param>
         /// <returns>MSBuild.Evaluation.Project</returns>
-        private static Project GetProject(string projectCSProjPath)
+        public static Project GetProject(string projectCSProjPath)
         {
             var projectRootElement = TryOpenProjectRootElement(projectCSProjPath);
             if (projectCSProjPath == null)
             {
                 throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.Error_MsBuildUnableToOpenProject, projectCSProjPath));
             }
+
             return new Project(projectRootElement);
+        }
+
+        public static List<string> GetProjectsFromSolution(string solutionPath)
+        {
+            var sln = SolutionFile.Parse(solutionPath);
+            return sln.ProjectsInOrder.Select(p => p.AbsolutePath).ToList();
         }
 
         /// <summary>

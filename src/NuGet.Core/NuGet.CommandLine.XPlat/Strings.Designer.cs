@@ -691,11 +691,11 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Ignores the given constraints by the user for given packages, and shows the latest version in the sources..
+        ///   Looks up a localized string similar to Shows all of the packages regardless of whether they have an update or not.
         /// </summary>
-        internal static string OutdatedConstraints_Description {
+        internal static string OutdatedAll_Description {
             get {
-                return ResourceManager.GetString("OutdatedConstraints_Description", resourceCulture);
+                return ResourceManager.GetString("OutdatedAll_Description", resourceCulture);
             }
         }
         
