@@ -85,11 +85,7 @@ namespace NuGet.SolutionRestoreManager
             _externalCts = cts;
             _externalCts.Token.Register(() => _cancelled = true);
 
-#if VS14
-            _progressFactory = t => WaitDialogProgress.StartAsync(_serviceProvider, _taskFactory, t);
-#else
             _progressFactory = t => StatusBarProgress.StartAsync(_serviceProvider, _taskFactory, t);
-#endif
 
             await _taskFactory.RunAsync(async () =>
             {

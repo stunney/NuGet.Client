@@ -84,34 +84,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public void WhenVstsImportNotFound_WhenDev14_ThenInsertBuiltInProvider()
-        {
-            // Arrange
-            _mockDte.Setup(x => x.Version).Returns("14.0.247200.00");
-            var importer = GetTestableImporter();
-
-            // Act
-            var results = importer.GetProviders();
-
-            // Assert
-            Assert.Contains(_visualStudioAccountProvider, results);
-        }
-
-        [Fact]
-        public void WhenVstsImportNotFound_WhenNotDev14_ThenDoNotInsertBuiltInProvider()
-        {
-            // Arrange
-            _mockDte.Setup(x => x.Version).Returns("15.0.123456.00");
-            var importer = GetTestableImporter();
-
-            // Act
-            var results = importer.GetProviders();
-
-            // Assert
-            Assert.DoesNotContain(_visualStudioAccountProvider, results);
-        }
-
-        [Fact]
         public void WhenVstsImportFound_ThenDoNotInsertBuiltInProvider()
         {
             // Arrange
