@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -31,13 +30,11 @@ namespace NuGet.VisualStudio
     [PartCreationPolicy(CreationPolicy.Shared)]
     public sealed class VsPathContextProvider : IVsPathContextProvider2
     {
-        private const string ProjectAssetsFile = "ProjectAssetsFile";
         private readonly IServiceProvider _serviceprovider;
         private readonly Lazy<ISettings> _settings;
         private readonly Lazy<IVsSolutionManager> _solutionManager;
         private readonly Lazy<NuGet.Common.ILogger> _logger;
-        private readonly Lazy<IVsProjectAdapterProvider> _vsProjectAdapterProvider;
-        private readonly Func<string, LockFile> _getLockFileOrNull;
+        private readonly Func<BuildIntegratedNuGetProject, Task<LockFile>> _getLockFileOrNullAsync;
 
         private readonly Lazy<INuGetProjectContext> _projectContext = new Lazy<INuGetProjectContext>(() => new VSAPIProjectContext());
 
@@ -48,15 +45,13 @@ namespace NuGet.VisualStudio
             Lazy<ISettings> settings,
             Lazy<IVsSolutionManager> solutionManager,
             [Import("VisualStudioActivityLogger")]
-            Lazy<NuGet.Common.ILogger> logger,
-            Lazy<IVsProjectAdapterProvider> vsProjectAdapterProvider)
+            Lazy<NuGet.Common.ILogger> logger)
         {
             _serviceprovider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _solutionManager = solutionManager ?? throw new ArgumentNullException(nameof(solutionManager));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _vsProjectAdapterProvider = vsProjectAdapterProvider ?? throw new ArgumentNullException(nameof(vsProjectAdapterProvider));
-            _getLockFileOrNull = BuildIntegratedProjectUtility.GetLockFileOrNull;
+            _getLockFileOrNullAsync = BuildIntegratedProjectUtility.GetLockFileOrNull;
         }
 
         /// <summary>
@@ -66,8 +61,7 @@ namespace NuGet.VisualStudio
             ISettings settings,
             IVsSolutionManager solutionManager,
             NuGet.Common.ILogger logger,
-            IVsProjectAdapterProvider vsProjectAdapterProvider,
-            Func<string, LockFile> getLockFileOrNull)
+            Func<BuildIntegratedNuGetProject, Task<LockFile>> getLockFileOrNullAsync)
         {
             if (settings == null)
             {
@@ -84,16 +78,10 @@ namespace NuGet.VisualStudio
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            if (vsProjectAdapterProvider == null)
-            {
-                throw new ArgumentNullException(nameof(vsProjectAdapterProvider));
-            }
-
             _settings = new Lazy<ISettings>(() => settings);
             _solutionManager = new Lazy<IVsSolutionManager>(() => solutionManager);
             _logger = new Lazy<NuGet.Common.ILogger>(() => logger);
-            _vsProjectAdapterProvider = new Lazy<IVsProjectAdapterProvider>(() => vsProjectAdapterProvider);
-            _getLockFileOrNull = getLockFileOrNull ?? BuildIntegratedProjectUtility.GetLockFileOrNull;
+            _getLockFileOrNullAsync = getLockFileOrNullAsync ?? BuildIntegratedProjectUtility.GetLockFileOrNull;
         }
 
         public bool TryCreateContext(string projectUniqueName, out IVsPathContext outputPathContext)
@@ -107,12 +95,15 @@ namespace NuGet.VisualStudio
             outputPathContext = NuGetUIThreadHelper.JoinableTaskFactory.Run(
                 async () =>
                 {
-                    // result.item1 is IVsProjectAdapter instance
-                    // result.item2 is ProjectAssetsFile path if exists
-                    var result = await CreateProjectAdapterAsync(projectUniqueName);
+                    var nuGetProject = await CreateNuGetProjectAsync(projectUniqueName);
 
-                    return result == null ? null
-                        : await CreatePathContextAsync(result.Item1, result.Item2, projectUniqueName, CancellationToken.None);
+                    // It's possible the project isn't a NuGet-compatible project at all.
+                    if (nuGetProject == null)
+                    {
+                        return null;
+                    }
+
+                    return await CreatePathContextAsync(nuGetProject, CancellationToken.None);
                 });
 
             return outputPathContext != null;
@@ -141,7 +132,7 @@ namespace NuGet.VisualStudio
             return outputPathContext != null;
         }
 
-        private async Task<Tuple<IVsProjectAdapter, string>> CreateProjectAdapterAsync(string projectUniqueName)
+        private async Task<NuGetProject> CreateNuGetProjectAsync(string projectUniqueName)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -155,40 +146,24 @@ namespace NuGet.VisualStudio
                 if (!string.IsNullOrEmpty(solutionProjectPath) &&
                     PathUtility.GetStringComparerBasedOnOS().Equals(solutionProjectPath, projectUniqueName))
                 {
-                    // get the VSProjectAdapter instance which will be used to retrieve MSBuild properties
-                    var projectApadter = await _vsProjectAdapterProvider.Value.CreateAdapterForFullyLoadedProjectAsync(solutionProject);
-
-                    // read ProjectAssetsFile property to get assets file full path
-                    var projectAssetsFile = await projectApadter.BuildProperties.GetPropertyValueAsync(ProjectAssetsFile);
-
-                    return Tuple.Create(projectApadter, projectAssetsFile);
+                    return await _solutionManager.Value.GetOrCreateProjectAsync(solutionProject, _projectContext.Value);
                 }
             }
 
             return null;
         }
 
-        public async Task<IVsPathContext> CreatePathContextAsync(
-            IVsProjectAdapter vsProjectAdapter,
-            string projectAssetsFile,
-            string projectUniqueName,
-            CancellationToken token)
+        public async Task<IVsPathContext> CreatePathContextAsync(NuGetProject nuGetProject, CancellationToken token)
         {
-            IVsPathContext context = null;
+            IVsPathContext context;
 
             try
             {
-                // First check for project.assets.json file and generate VsPathContext from there.
-                if (!string.IsNullOrEmpty(projectAssetsFile))
-                {
-                    context = GetPathContextFromProjectLockFile(projectAssetsFile);
-                }
+                context = await GetPathContextFromAssetsFileAsync(
+                    nuGetProject, token);
 
-                // if no project.assets.json file, then check for project.lock.json file.
-                context = context ?? GetPathContextForProjectJson(vsProjectAdapter);
-
-                // if no project.lock.json file, then look for packages.config file.
-                context = context ?? await GetPathContextForPackagesConfigAsync(vsProjectAdapter, token);
+                context = context ?? await GetPathContextFromPackagesConfigAsync(
+                    nuGetProject, token);
 
                 // Fallback to reading the path context from the solution's settings. Note that project level settings in
                 // VS are not currently supported.
@@ -196,6 +171,7 @@ namespace NuGet.VisualStudio
             }
             catch (Exception e) when (e is KeyNotFoundException || e is InvalidOperationException)
             {
+                var projectUniqueName = NuGetProject.GetUniqueNameOrName(nuGetProject);
                 var errorMessage = string.Format(CultureInfo.CurrentCulture, VsResources.PathContext_CreateContextError, projectUniqueName, e.Message);
                 _logger.Value.LogError(errorMessage);
                 throw new InvalidOperationException(errorMessage, e);
@@ -204,44 +180,24 @@ namespace NuGet.VisualStudio
             return context;
         }
 
-        private IVsPathContext GetPathContextForProjectJson(
-            IVsProjectAdapter vsProjectAdapter)
+        public IVsPathContext GetSolutionPathContext()
         {
-            // generate project.lock.json file path from project file
-            var projectFilePath = vsProjectAdapter.FullProjectPath;
-
-            if (!string.IsNullOrEmpty(projectFilePath))
-            {
-                var msbuildProjectFile = new FileInfo(projectFilePath);
-                var projectNameFromMSBuildPath = Path.GetFileNameWithoutExtension(msbuildProjectFile.Name);
-
-                string projectJsonPath = null;
-                if (string.IsNullOrEmpty(projectNameFromMSBuildPath))
-                {
-                    projectJsonPath = Path.Combine(msbuildProjectFile.DirectoryName,
-                        ProjectJsonPathUtilities.ProjectConfigFileName);
-                }
-                else
-                {
-                    projectJsonPath = ProjectJsonPathUtilities.GetProjectConfigPath(
-                        msbuildProjectFile.DirectoryName,
-                        projectNameFromMSBuildPath);
-                }
-
-                if (File.Exists(projectJsonPath))
-                {
-                    var lockFilePath = ProjectJsonPathUtilities.GetLockFilePath(projectJsonPath);
-                    return GetPathContextFromProjectLockFile(lockFilePath);
-                }
-            }
-
-            return null;
+            return new VsPathContext(NuGetPathContext.Create(_settings.Value));
         }
 
-        private IVsPathContext GetPathContextFromProjectLockFile(
-            string lockFilePath)
+        private async Task<IVsPathContext> GetPathContextFromAssetsFileAsync(
+            NuGetProject nuGetProject, CancellationToken token)
         {
-            var lockFile = _getLockFileOrNull(lockFilePath);
+            // It's possible that this project isn't a build integrated NuGet project at all. That is, this project may
+            // be a packages.config project.
+            var buildIntegratedProject = nuGetProject as BuildIntegratedNuGetProject;
+            if (buildIntegratedProject == null)
+            {
+                return null;
+            }
+
+            var lockFile = await _getLockFileOrNullAsync(buildIntegratedProject);
+
             if ((lockFile?.PackageFolders?.Count ?? 0) == 0)
             {
                 throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, VsResources.PathContext_LockFileError));
@@ -287,30 +243,25 @@ namespace NuGet.VisualStudio
                 trie);
         }
 
-        private async Task<IVsPathContext> GetPathContextForPackagesConfigAsync(
-            IVsProjectAdapter vsProjectAdapter, CancellationToken token)
+        private async Task<IVsPathContext> GetPathContextFromPackagesConfigAsync(
+            NuGetProject nuGetProject, CancellationToken token)
         {
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            var msbuildNuGetProject = nuGetProject as MSBuildNuGetProject;
+            if (msbuildNuGetProject == null)
+            {
+                return null;
+            }
 
-            var props = new Dictionary<string, object>();
-            props.Add(NuGetProjectMetadataKeys.Name, Path.GetFileNameWithoutExtension(vsProjectAdapter.FullProjectPath));
-            props.Add(NuGetProjectMetadataKeys.TargetFramework, await vsProjectAdapter.GetTargetFrameworkAsync());
-
-            var packagesProject = new PackagesConfigNuGetProject(vsProjectAdapter.ProjectDirectory, props);
-
-            var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(_solutionManager.Value, _settings.Value);
-            var folderProject = new FolderNuGetProject(packagesFolderPath);
+            var packageReferences = await msbuildNuGetProject.GetInstalledPackagesAsync(token);
 
             // switch to a background thread to process packages data
             await TaskScheduler.Default;
-
-            var packageReferences = await packagesProject.GetInstalledPackagesAsync(token);
 
             var trie = new PathLookupTrie<string>();
 
             foreach (var pid in packageReferences.Select(pr => pr.PackageIdentity))
             {
-                var packageInstallPath = folderProject.GetInstalledPath(pid);
+                var packageInstallPath = msbuildNuGetProject.FolderNuGetProject.GetInstalledPath(pid);
                 if (string.IsNullOrEmpty(packageInstallPath))
                 {
                     throw new KeyNotFoundException(string.Format(CultureInfo.CurrentCulture, VsResources.PathContext_PackageDirectoryNotFound, pid));
@@ -325,11 +276,6 @@ namespace NuGet.VisualStudio
                 pathContext.UserPackageFolder,
                 pathContext.FallbackPackageFolders.Cast<string>(),
                 trie);
-        }
-
-        public IVsPathContext GetSolutionPathContext()
-        {
-            return new VsPathContext(NuGetPathContext.Create(_settings.Value));
         }
     }
 }
