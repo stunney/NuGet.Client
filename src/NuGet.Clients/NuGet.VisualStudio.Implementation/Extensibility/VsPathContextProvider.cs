@@ -159,15 +159,30 @@ namespace NuGet.VisualStudio
 
             try
             {
-                context = await GetPathContextFromAssetsFileAsync(
-                    nuGetProject, token);
+                var buildIntegratedProject = nuGetProject as BuildIntegratedNuGetProject;
 
-                context = context ?? await GetPathContextFromPackagesConfigAsync(
-                    nuGetProject, token);
-
-                // Fallback to reading the path context from the solution's settings. Note that project level settings in
-                // VS are not currently supported.
-                context = context ?? GetSolutionPathContext();
+                if (buildIntegratedProject != null)
+                {
+                    // if project is build integrated, then read it from assets file.
+                    context = await GetPathContextFromAssetsFileAsync(
+                        buildIntegratedProject, token);
+                }
+                else
+                {
+                    var msbuildNuGetProject = nuGetProject as MSBuildNuGetProject;
+                    if (msbuildNuGetProject == null)
+                    {
+                        // when a msbuild project, then read it from packages.config file.
+                        context = await GetPathContextFromPackagesConfigAsync(
+                            msbuildNuGetProject, token);
+                    }
+                    else
+                    {
+                        // Fallback to reading the path context from the solution's settings. Note that project level settings in
+                        // VS are not currently supported.
+                        context = GetSolutionPathContext();
+                    }
+                }
             }
             catch (Exception e) when (e is KeyNotFoundException || e is InvalidOperationException)
             {
@@ -186,16 +201,8 @@ namespace NuGet.VisualStudio
         }
 
         private async Task<IVsPathContext> GetPathContextFromAssetsFileAsync(
-            NuGetProject nuGetProject, CancellationToken token)
+            BuildIntegratedNuGetProject buildIntegratedProject, CancellationToken token)
         {
-            // It's possible that this project isn't a build integrated NuGet project at all. That is, this project may
-            // be a packages.config project.
-            var buildIntegratedProject = nuGetProject as BuildIntegratedNuGetProject;
-            if (buildIntegratedProject == null)
-            {
-                return null;
-            }
-
             var lockFile = await _getLockFileOrNullAsync(buildIntegratedProject);
 
             if ((lockFile?.PackageFolders?.Count ?? 0) == 0)
@@ -244,14 +251,8 @@ namespace NuGet.VisualStudio
         }
 
         private async Task<IVsPathContext> GetPathContextFromPackagesConfigAsync(
-            NuGetProject nuGetProject, CancellationToken token)
+            MSBuildNuGetProject msbuildNuGetProject, CancellationToken token)
         {
-            var msbuildNuGetProject = nuGetProject as MSBuildNuGetProject;
-            if (msbuildNuGetProject == null)
-            {
-                return null;
-            }
-
             var packageReferences = await msbuildNuGetProject.GetInstalledPackagesAsync(token);
 
             // switch to a background thread to process packages data
