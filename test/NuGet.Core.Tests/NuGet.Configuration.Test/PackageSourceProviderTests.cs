@@ -2813,6 +2813,75 @@ namespace NuGet.Configuration.Test
             }
         }
 
+        [Fact]
+        public void LoadPackageSources_SetMaxHttpRequest()
+        {
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
+            {
+                // Arrange
+                var configContents =
+@"<?xml version='1.0'?>
+<configuration>
+    <config>
+        <add key='MaxHttpRequest' value='2' />
+    </config>
+    <packageSources>
+        <add key='NuGet.org' value='https://NuGet.org' />
+    </packageSources>
+</configuration>";
+
+                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.Config"), configContents);
+
+                var settings = Settings.LoadDefaultSettings(mockBaseDirectory.Path,
+                   configFileName: null,
+                   machineWideSettings: null,
+                   loadAppDataSettings: true,
+                   useTestingGlobalPath: false);
+
+
+                var packageSourceProvider = new PackageSourceProvider(settings);
+
+                // Act
+                var packageSources = packageSourceProvider.LoadPackageSources();
+
+                // Assert
+                Assert.True(packageSources.All(p => p.MaxHttpRequest == 2));
+            }
+        }
+
+        [Fact]
+        public void LoadPackageSources_NoMaxHttpRequest()
+        {
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
+            {
+                // Arrange
+                var configContents =
+@"<?xml version='1.0'?>
+<configuration>
+    <packageSources>
+        <add key='NuGet.org' value='https://NuGet.org' />
+    </packageSources>
+</configuration>";
+
+                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.Config"), configContents);
+
+                var settings = Settings.LoadDefaultSettings(mockBaseDirectory.Path,
+                   configFileName: null,
+                   machineWideSettings: null,
+                   loadAppDataSettings: true,
+                   useTestingGlobalPath: false);
+
+
+                var packageSourceProvider = new PackageSourceProvider(settings);
+
+                // Act
+                var packageSources = packageSourceProvider.LoadPackageSources();
+
+                // Assert
+                Assert.True(packageSources.All(p => p.MaxHttpRequest == 0));
+            }
+        }
+
         private string CreateNuGetConfigContent(string enabledReplacement = "", string disabledReplacement = "", string activeSourceReplacement = "")
         {
             var nugetConfigBaseString = new StringBuilder();

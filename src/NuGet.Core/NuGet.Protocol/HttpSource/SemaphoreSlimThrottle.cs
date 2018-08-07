@@ -35,5 +35,10 @@ namespace NuGet.Protocol
         {
             return new SemaphoreSlimThrottle(new SemaphoreSlim(1));
         }
+
+        public static SemaphoreSlimThrottle CreateSemaphoreThrottle(int initialCount)
+        {
+            return new SemaphoreSlimThrottle(new SemaphoreSlim(initialCount));
+        }
     }
 }

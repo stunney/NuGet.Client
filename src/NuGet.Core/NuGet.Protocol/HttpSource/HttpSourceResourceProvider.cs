@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -34,8 +34,16 @@ namespace NuGet.Protocol
             Debug.Assert(source.PackageSource.IsHttp, "HTTP source requested for a non-http source.");
 
             HttpSourceResource curResource = null;
+            IThrottle throttle = NullThrottle.Instance;
 
-            var throttle = Throttle ?? NullThrottle.Instance;
+            if (Throttle != null)
+            {
+                throttle = Throttle;
+            }
+            else if (source.PackageSource.MaxHttpRequest > 0)
+            {
+                throttle = SemaphoreSlimThrottle.CreateSemaphoreThrottle(source.PackageSource.MaxHttpRequest);
+            }
 
             if (source.PackageSource.IsHttp)
             {

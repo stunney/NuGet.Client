@@ -167,7 +167,8 @@ namespace NuGet.Configuration
             var name = setting.Key;
             var packageSource = new PackageSource(setting.Value, name, isEnabled)
             {
-                IsMachineWide = setting.IsMachineWide
+                IsMachineWide = setting.IsMachineWide,
+                MaxHttpRequest = SettingsUtility.GetMaxHttpRequest(Settings)
             };
 
             var credentials = ReadCredential(name);
