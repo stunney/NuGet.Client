@@ -984,8 +984,8 @@ namespace NuGet.Configuration.Test
                 .Returns(new KeyValuePair<string, string>[0]);
             settings.Setup(s => s.GetNestedSettingValues(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(new SettingValue[0]);
-            settings.Setup(s => s.GetSettingValues("maxHttpRequest", false))
-               .Returns(new SettingValue[0]);
+            settings.Setup(s => s.GetValue("config", "maxHttpRequest", false))
+               .Returns(() => null);
 
             var provider = CreatePackageSourceProvider(settings.Object);
 
@@ -1020,8 +1020,8 @@ namespace NuGet.Configuration.Test
                 .Returns(new KeyValuePair<string, string>[0]);
             settings.Setup(s => s.GetNestedSettingValues(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(new SettingValue[0]);
-            settings.Setup(s => s.GetSettingValues("maxHttpRequest", false))
-                .Returns(new SettingValue[0]);
+            settings.Setup(s => s.GetValue("config", "maxHttpRequest", false))
+               .Returns(() => null);
 
             var provider = CreatePackageSourceProvider(settings.Object);
 
@@ -1054,8 +1054,8 @@ namespace NuGet.Configuration.Test
                 .Returns(new KeyValuePair<string, string>[0]);
             settings.Setup(s => s.GetNestedSettingValues(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(new SettingValue[0]);
-            settings.Setup(s => s.GetSettingValues("maxHttpRequest", false))
-               .Returns(new SettingValue[0]);
+            settings.Setup(s => s.GetValue("config", "maxHttpRequest", false))
+               .Returns(() => null);
 
             var provider = CreatePackageSourceProvider(settings.Object);
 
@@ -1885,8 +1885,8 @@ namespace NuGet.Configuration.Test
                 .Returns(new KeyValuePair<string, string>[0]);
             settings.Setup(s => s.GetNestedSettingValues(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(new SettingValue[0]);
-            settings.Setup(s => s.GetSettingValues("maxHttpRequest", false))
-               .Returns(new SettingValue[0]);
+            settings.Setup(s => s.GetValue("config", "maxHttpRequest", false))
+                .Returns(() => null);
 
             var provider = CreatePackageSourceProvider(settings.Object);
 
@@ -2874,7 +2874,7 @@ namespace NuGet.Configuration.Test
                 File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.Config"), configContents);
 
                 var settings = Settings.LoadDefaultSettings(mockBaseDirectory.Path,
-                   configFileName: null,
+                   configFileName: "NuGet.Config",
                    machineWideSettings: null,
                    loadAppDataSettings: true,
                    useTestingGlobalPath: false);
