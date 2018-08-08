@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,10 +14,16 @@ namespace Test.Utility
     public class TestMessageHandler : HttpClientHandler
     {
         private Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>> _responses;
+        private int _currentRequestCount;
+
+        public int MaxConcurrencyRequest { get; set; }
+
+        public int WaitTimeInMs { get; set; }
 
         public TestMessageHandler(Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>> responses)
         {
             _responses = responses;
+            MaxConcurrencyRequest = 0;
         }
 
         public TestMessageHandler(Dictionary<string, string> responses, string errorContent)
@@ -27,7 +33,26 @@ namespace Test.Utility
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            return SendAsyncPublic(request);
+            try
+            {
+                _currentRequestCount++;
+
+                if (_currentRequestCount > MaxConcurrencyRequest)
+                {
+                    MaxConcurrencyRequest = _currentRequestCount;
+                }
+
+                if (WaitTimeInMs > 0)
+                {
+                    Thread.Sleep(WaitTimeInMs);
+                }
+
+                return SendAsyncPublic(request);
+            }
+            finally
+            {
+                _currentRequestCount--;
+            }
         }
         
         private Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>> GetResponse(Dictionary<string, string> responses, string errorContent)
