@@ -984,6 +984,8 @@ namespace NuGet.Configuration.Test
                 .Returns(new KeyValuePair<string, string>[0]);
             settings.Setup(s => s.GetNestedSettingValues(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(new SettingValue[0]);
+            settings.Setup(s => s.GetSettingValues("maxHttpRequest", false))
+               .Returns(new SettingValue[0]);
 
             var provider = CreatePackageSourceProvider(settings.Object);
 
@@ -1018,6 +1020,8 @@ namespace NuGet.Configuration.Test
                 .Returns(new KeyValuePair<string, string>[0]);
             settings.Setup(s => s.GetNestedSettingValues(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(new SettingValue[0]);
+            settings.Setup(s => s.GetSettingValues("maxHttpRequest", false))
+                .Returns(new SettingValue[0]);
 
             var provider = CreatePackageSourceProvider(settings.Object);
 
@@ -1050,6 +1054,8 @@ namespace NuGet.Configuration.Test
                 .Returns(new KeyValuePair<string, string>[0]);
             settings.Setup(s => s.GetNestedSettingValues(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(new SettingValue[0]);
+            settings.Setup(s => s.GetSettingValues("maxHttpRequest", false))
+               .Returns(new SettingValue[0]);
 
             var provider = CreatePackageSourceProvider(settings.Object);
 
@@ -1879,6 +1885,8 @@ namespace NuGet.Configuration.Test
                 .Returns(new KeyValuePair<string, string>[0]);
             settings.Setup(s => s.GetNestedSettingValues(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(new SettingValue[0]);
+            settings.Setup(s => s.GetSettingValues("maxHttpRequest", false))
+               .Returns(new SettingValue[0]);
 
             var provider = CreatePackageSourceProvider(settings.Object);
 
