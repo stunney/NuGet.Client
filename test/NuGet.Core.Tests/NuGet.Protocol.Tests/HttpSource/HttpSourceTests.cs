@@ -477,7 +477,7 @@ namespace NuGet.Protocol.Tests
                 await Task.WhenAll(tasks);
 
                 // Assert
-                Assert.True(tc.MessageHandler.MaxConcurrencyRequest <= 4);
+                Assert.True(tc.MessageHandler.MaxConcurrencyRequest <= 4, $"MaxConcurrencyRequest is {tc.MessageHandler.MaxConcurrencyRequest}");
             }
         }
 

@@ -34,19 +34,20 @@ namespace NuGet.Protocol
             Debug.Assert(source.PackageSource.IsHttp, "HTTP source requested for a non-http source.");
 
             HttpSourceResource curResource = null;
-            IThrottle throttle = NullThrottle.Instance;
-
-            if (Throttle != null)
-            {
-                throttle = Throttle;
-            }
-            else if (source.PackageSource.MaxHttpRequest > 0)
-            {
-                throttle = SemaphoreSlimThrottle.CreateSemaphoreThrottle(source.PackageSource.MaxHttpRequest);
-            }
 
             if (source.PackageSource.IsHttp)
             {
+                IThrottle throttle = NullThrottle.Instance;
+
+                if (Throttle != null)
+                {
+                    throttle = Throttle;
+                }
+                else if (source.PackageSource.MaxHttpRequest > 0)
+                {
+                    throttle = SemaphoreSlimThrottle.CreateSemaphoreThrottle(source.PackageSource.MaxHttpRequest);
+                }
+
                 curResource = _cache.GetOrAdd(
                     source.PackageSource, 
                     packageSource => new HttpSourceResource(HttpSource.Create(source, throttle)));
